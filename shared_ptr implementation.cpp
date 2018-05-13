@@ -88,7 +88,7 @@ public:
         return ptr;
     }
 
-    T operator * (void) {
+    T& operator * (void) {  // return by reference.
         return *ptr;
     }
 
@@ -136,8 +136,6 @@ int main() {
 #else
     shared_ptr_custom<int> tp(new int(77));
 #endif // BAD_PRACTICE
-
-
 
     return 0;
 }
