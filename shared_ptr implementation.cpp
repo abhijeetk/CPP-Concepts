@@ -3,13 +3,15 @@
 // http://lokiastari.com/blog/2014/12/30/c-plus-plus-by-example-smart-pointer/
 #include <iostream>
 using namespace std;
+#define BAD_PRACTICE 1
 
 template <class T>
 class shared_ptr_custom {
 private:
     T* ptr;
     int* count; // This should be pointer because similar to 'ptr' count value should
-                // be same for all instance.
+                // be same for all instance. OR We can make it 'mutable' and copy it everytime
+                // 'mutable' allow us to modify 'count' even if current object is constant
 
     void free() {
         if (ptr) {
@@ -31,13 +33,23 @@ public:
     explicit shared_ptr_custom() : ptr(nullptr), count(nullptr) {
     
     }
+
+#ifdef BAD_PRACTICE
     explicit shared_ptr_custom(T* ptr) : count(nullptr) {
         this->ptr = ptr;
         if (this->count == nullptr) {
             this->count = new int(1);
         }
     }
-
+#else
+    // Force object to be created as rvalue
+    shared_ptr_custom(T*&& ptr) : count(nullptr) {
+        this->ptr = ptr;
+        if (this->count == nullptr) {
+            this->count = new int(1);
+        }
+    }
+#endif
     shared_ptr_custom(const shared_ptr_custom<T>& rhs) {
         if (this->ptr != rhs.ptr) {
             this->ptr = rhs.ptr;
@@ -117,5 +129,15 @@ int main() {
         b = std::move(a);  // move assignment, given up previous ownership and gaining new ownership
         cout << b.useCount() << " : " << b2.useCount() << endl;
     }
+
+#ifdef  BAD_PRACTICE
+    int *t = new int(7);
+    shared_ptr_custom<int> tp(t);
+#else
+    shared_ptr_custom<int> tp(new int(77));
+#endif // BAD_PRACTICE
+
+
+
     return 0;
 }
